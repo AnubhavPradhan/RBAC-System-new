@@ -87,6 +87,14 @@ const Reports = () => {
       const endpoint = endpointMap[report.id] || '/reports/user-activity'
       const { data } = await api.get(endpoint, { params })
       setReportData(data)
+
+      // Log report generation to audit logs
+      await api.post('/audit-logs', {
+        action: 'Report Generated',
+        resource: 'Reports',
+        details: `Generated "${report.name}" (${data.length} records)`,
+        severity: 'Info',
+      })
     } catch (err) {
       alert('Failed to generate report')
     } finally {
