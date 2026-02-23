@@ -2,11 +2,15 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 
+// Fallback defaults so the app works without a .env file
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'rbac_default_secret_key_change_in_production'
+process.env.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d'
+
 const app = express()
 const PORT = process.env.PORT || 3001
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
+app.use(cors({ origin: /^http:\/\/localhost(:\d+)?$/, credentials: true }))
 app.use(express.json())
 
 // Routes

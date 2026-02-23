@@ -1,63 +1,102 @@
-# RBAC System
+# Enhanced RBAC System
 
-A modern Role-Based Access Control (RBAC) system that has components inspired from ABAC, ReBAC, etc. with React frontend and backend API (coming soon).
+A full-stack **Role-Based Access Control (RBAC)** system with a React frontend and Node.js/Express backend. Supports dynamic roles, permissions, user management, audit logging, and analytics.
 
 ## Project Structure
 
 ```
-├── frontend/          # React + Tailwind CSS frontend
+├── frontend/                  # React + Tailwind CSS frontend
 │   ├── src/
+│   │   ├── components/        # Layout, Sidebar, ProtectedRoute
+│   │   ├── context/           # AuthContext (auth + permission checks)
+│   │   ├── pages/             # Dashboard, Users, Roles, Permissions,
+│   │   │                      #   Analytics, Reports, AuditLogs, Settings
+│   │   └── utils/             # Axios API client
 │   ├── package.json
 │   └── vite.config.js
-└── backend/           # Backend API (to be implemented)
+└── backend/                   # Express REST API
+    ├── src/
+    │   ├── db/                # SQLite setup + seed data
+    │   ├── middleware/        # JWT auth middleware
+    │   └── routes/            # auth, users, roles, permissions,
+    │                          #   auditLogs, reports
+    ├── data/                  # SQLite database (auto-created, gitignored)
+    ├── .env.example
+    └── package.json
 ```
 
 ## Getting Started
 
-### Frontend Setup
+### Prerequisites
+- Node.js 22+ (required for built-in SQLite support)
 
-1. Navigate to the frontend folder:
+### 1. Clone the repo
 ```bash
-cd frontend
+git clone https://github.com/AnubhavPradhan/Enhanced-RBAC-System.git
+cd "Enhanced-RBAC-System"
 ```
 
-2. Install dependencies:
+### 2. Backend Setup
 ```bash
+cd backend
 npm install
 ```
 
-3. Start the development server:
+Optionally configure environment variables (the app works without this step — defaults are built in):
+```bash
+cp .env.example .env
+# then edit .env to set your own JWT_SECRET and PORT
+```
+
 ```bash
 npm run dev
 ```
+The API runs on `http://localhost:3001`. The SQLite database and default admin account are created automatically on first run.
 
-4. Open your browser and navigate to `http://localhost:5173`
+### 3. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Open `http://localhost:5173` (or whichever port Vite picks).
 
-### Backend Setup
+## Default Admin Account
 
-Coming soon...
+| Field    | Value             |
+|----------|-------------------|
+| Username | `admin`           |
+| Email    | `admin@gmail.com` |
+| Password | `admin123`        |
 
 ## Features
 
-### Frontend
-- **Dashboard**: Overview of system statistics and recent activity
-- **Users Management**: Add, view, edit, and delete users
-- **Roles Management**: Create and manage roles with custom permissions
-- **Permissions Management**: Define and organize permissions by category
+- **Dashboard** — Live stats (total users, roles, permissions) and recent activity feed
+- **Users Management** — Add, edit, delete users with name, username, email, password, role, status (Admin only)
+- **Roles Management** — Create roles with custom permission sets; dynamic role assignment
+- **Permissions Management** — Define permissions by category; assign to roles
+- **Analytics** — Role distribution and activity charts from live data
+- **Reports** — System summary reports
+- **Audit Logs** — Full action history with severity levels
+- **Settings** — User profile settings
+- **Authentication** — JWT-based login/signup, role-aware sidebar, protected routes
 
-### Backend
-- To be implemented
-
-## Technologies Used
+## Technologies
 
 ### Frontend
 - React 18
-- React Router
+- React Router v6
 - Tailwind CSS
+- Axios
 - Vite
 
 ### Backend
-- Coming soon...
+- Node.js 22+ (built-in `node:sqlite`)
+- Express 4
+- JSON Web Tokens (JWT)
+- bcryptjs
+- dotenv
+- nodemon
 
 ## License
 
