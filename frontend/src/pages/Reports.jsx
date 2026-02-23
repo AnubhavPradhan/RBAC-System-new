@@ -38,37 +38,31 @@ const Reports = () => {
       id: 'user-activity',
       name: 'User Activity Report',
       description: 'Detailed user login and activity logs',
-      icon: '📊'
     },
     {
       id: 'permission-audit',
       name: 'Permission Audit',
       description: 'Changes to permissions and access rights',
-      icon: '🔍'
     },
     {
       id: 'role-assignment',
       name: 'Role Assignment Report',
       description: 'Role changes and assignments over time',
-      icon: '👥'
     },
     {
       id: 'security-summary',
       name: 'Security Summary',
       description: 'Security events and access violations',
-      icon: '🛡️'
     },
     {
       id: 'compliance',
       name: 'Compliance Report',
       description: 'Regulatory compliance and access control',
-      icon: '📋'
     },
     {
       id: 'system-usage',
       name: 'System Usage',
       description: 'Overall system usage statistics',
-      icon: '📈'
     },
   ]
 
@@ -154,63 +148,59 @@ const Reports = () => {
     <div>
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Reports</h1>
 
-      {/* Date Range Filter */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Report Filters</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-            <input
-              type="date"
-              value={dateRange.start}
-              onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-            <input
-              type="date"
-              value={dateRange.end}
-              onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex items-end gap-2">
-            <button
-              onClick={() => selectedReport && handleGenerateReport(selectedReport)}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Apply Filters
-            </button>
-            <button
-              onClick={() => setDateRange({ start: '', end: '' })}
-              className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors font-medium"
-            >
-              Clear Dates
-            </button>
+      {/* Filters + Report Types */}
+      <div className="bg-white rounded-lg shadow-md mb-8">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Report Filters</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-end gap-2">
+              <button
+                onClick={() => selectedReport && handleGenerateReport(selectedReport)}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Apply Filters
+              </button>
+              <button
+                onClick={() => setDateRange({ start: '', end: '' })}
+                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors font-medium"
+              >
+                Clear Dates
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Report Types Grid */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Available Reports</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="divide-y divide-gray-100">
           {reportTypes.map((report) => (
             <div
               key={report.id}
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+              className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">{report.icon}</span>
-                <h3 className="text-lg font-semibold text-gray-800">{report.name}</h3>
+              <div className="flex-1 min-w-0 mr-6">
+                <h3 className="text-base font-semibold text-gray-800">{report.name}</h3>
+                <p className="text-sm text-gray-500 mt-0.5">{report.description}</p>
               </div>
-              <p className="text-gray-600 text-sm mb-4">{report.description}</p>
               <button
                 onClick={() => handleGenerateReport(report)}
                 disabled={loading}
-                className="w-full bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="shrink-0 bg-gray-800 text-white py-2 px-5 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 text-sm font-medium"
               >
                 {loading && selectedReport?.id === report.id ? 'Loading...' : 'Generate'}
               </button>
