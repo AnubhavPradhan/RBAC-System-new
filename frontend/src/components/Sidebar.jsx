@@ -7,8 +7,8 @@ const Sidebar = () => {
   const navigate = useNavigate()
   const { hasPermission, currentUser, logout } = useAuth()
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     navigate('/login')
   }
 

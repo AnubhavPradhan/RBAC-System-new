@@ -46,7 +46,8 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    try { await api.post('/auth/logout') } catch (_) {}
     localStorage.removeItem('rbac-token')
     localStorage.removeItem('rbac-current-user')
     setCurrentUser(null)
