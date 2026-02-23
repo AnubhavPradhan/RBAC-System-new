@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import api from '../utils/api'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 // ─── Export Helpers ────────────────────────────────────────────────────────────
 const exportToCSV = (data, filename) => {
@@ -110,24 +112,28 @@ const Reports = () => {
 
   const handleExportPDF = () => {
     if (!selectedReport || !reportData.length) return alert('Generate a report first')
+    const doc = new jsPDF({ orientation: 'landscape' })
     const headers = Object.keys(reportData[0])
-    const rows = reportData.map(row =>
-      `<tr>${headers.map(h => `<td style="border:1px solid #ddd;padding:6px 10px;font-size:12px">${row[h] ?? ''}</td>`).join('')}</tr>`
-    ).join('')
-    const html = `
-      <html><head><title>${selectedReport.name}</title>
-      <style>body{font-family:sans-serif;padding:20px}h2{margin-bottom:12px}table{border-collapse:collapse;width:100%}th{background:#1f2937;color:#fff;padding:8px 10px;font-size:12px;text-align:left;border:1px solid #ddd}</style>
-      </head><body>
-      <h2>${selectedReport.name}</h2>
-      <p style="font-size:12px;color:#666;margin-bottom:12px">Generated: ${new Date().toLocaleString()} &nbsp;|&nbsp; ${reportData.length} records</p>
-      <table><thead><tr>${headers.map(h => `<th>${h.replace(/_/g,' ')}</th>`).join('')}</tr></thead>
-      <tbody>${rows}</tbody></table>
-      </body></html>`
-    const win = window.open('', '_blank')
-    win.document.write(html)
-    win.document.close()
-    win.focus()
-    win.print()
+    const rows = reportData.map(row => headers.map(h => row[h] ?? ''))
+
+    doc.setFontSize(16)
+    doc.setTextColor(31, 41, 55)
+    doc.text(selectedReport.name, 14, 18)
+
+    doc.setFontSize(9)
+    doc.setTextColor(120, 120, 120)
+    doc.text(`Generated: ${new Date().toLocaleString()}  |  ${reportData.length} records`, 14, 26)
+
+    autoTable(doc, {
+      head: [headers.map(h => h.replace(/_/g, ' ').toUpperCase())],
+      body: rows,
+      startY: 32,
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [31, 41, 55], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
+    })
+
+    doc.save(`${selectedReport.id}-report.pdf`)
   }
 
   const handleServerExportCSV = async (type) => {
