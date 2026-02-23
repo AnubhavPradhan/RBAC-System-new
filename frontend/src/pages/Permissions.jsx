@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { Lock, CheckCircle, XCircle } from 'lucide-react'
 import api from '../utils/api'
 
 const Permissions = () => {
@@ -202,28 +203,31 @@ const Permissions = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-100 text-sm font-medium">Total Permissions</p>
-              <p className="text-3xl font-bold mt-1">{stats.total}</p>
-            </div>
+        <div className="bg-white rounded-2xl shadow-md p-6 flex items-center gap-4">
+          <div className="bg-blue-500 w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center">
+            <Lock className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p className="text-gray-500 text-sm font-medium">Total Permissions</p>
+            <p className="text-3xl font-bold text-gray-800">{stats.total}</p>
           </div>
         </div>
-        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-100 text-sm font-medium">Active Permissions</p>
-              <p className="text-3xl font-bold mt-1">{stats.active}</p>
-            </div>
+        <div className="bg-white rounded-2xl shadow-md p-6 flex items-center gap-4">
+          <div className="bg-green-500 w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center">
+            <CheckCircle className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p className="text-gray-500 text-sm font-medium">Active Permissions</p>
+            <p className="text-3xl font-bold text-gray-800">{stats.active}</p>
           </div>
         </div>
-        <div className="bg-gradient-to-r from-gray-500 to-gray-600 rounded-lg p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-100 text-sm font-medium">Inactive Permissions</p>
-              <p className="text-3xl font-bold mt-1">{stats.inactive}</p>
-            </div>
+        <div className="bg-white rounded-2xl shadow-md p-6 flex items-center gap-4">
+          <div className="bg-gray-400 w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center">
+            <XCircle className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p className="text-gray-500 text-sm font-medium">Inactive Permissions</p>
+            <p className="text-3xl font-bold text-gray-800">{stats.inactive}</p>
           </div>
         </div>
       </div>
@@ -456,8 +460,7 @@ const Permissions = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
-              <span className="mr-2 text-3xl">{editingPermission ? '✏️' : '➕'}</span>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">
               {editingPermission ? 'Edit Permission' : 'Add New Permission'}
             </h2>
             
@@ -526,6 +529,7 @@ const Permissions = () => {
               </div>
 
               {/* Help Text */}
+              {!editingPermission && (
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-start space-x-2">
                   <span className="text-blue-600 text-xl">💡</span>
@@ -540,6 +544,7 @@ const Permissions = () => {
                   </div>
                 </div>
               </div>
+              )}
 
               <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                 <button
@@ -570,41 +575,36 @@ const Permissions = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-8 max-w-md w-full">
             <div className="text-center mb-6">
-              <div className="text-6xl mb-4">⚠️</div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Delete Permission?</h2>
               <p className="text-gray-600">
                 Are you sure you want to delete the permission <strong>"{permissionToDelete.name}"</strong>?
               </p>
             </div>
 
-            {permissionToDelete.usedBy && permissionToDelete.usedBy.length > 0 && (
-              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-start space-x-2">
-                  <span className="text-yellow-600 text-xl">⚠️</span>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-yellow-900 mb-2">Warning</h4>
-                    <p className="text-xs text-yellow-800 mb-2">
-                      This permission is currently used by the following roles:
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {permissionToDelete.usedBy.map((role, idx) => (
-                        <span key={idx} className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">
-                          {role}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-xs text-yellow-800 mt-2">
-                      Deleting this permission will remove it from all these roles.
-                    </p>
-                  </div>
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <span className="text-yellow-600 text-xl">⚠️</span>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-yellow-900 mb-2">Warning</h4>
+                  {permissionToDelete.usedBy && permissionToDelete.usedBy.length > 0 && (
+                    <>
+                      <p className="text-xs text-yellow-800 mb-2">
+                        This permission is currently used by the following roles:
+                      </p>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {permissionToDelete.usedBy.map((role, idx) => (
+                          <span key={idx} className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">
+                            {role}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  <p className="text-xs text-yellow-800">
+                    <strong>This action cannot be undone.</strong> The permission will be permanently deleted from the system.
+                  </p>
                 </div>
               </div>
-            )}
-
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-red-800">
-                <strong>This action cannot be undone.</strong> The permission will be permanently deleted from the system.
-              </p>
             </div>
 
             <div className="flex justify-end space-x-3">

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import api from '../utils/api'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 // ─── Export Helpers ────────────────────────────────────────────────────────────
 const exportToCSV = (data, filename) => {
@@ -36,37 +38,31 @@ const Reports = () => {
       id: 'user-activity',
       name: 'User Activity Report',
       description: 'Detailed user login and activity logs',
-      icon: '📊'
     },
     {
       id: 'permission-audit',
       name: 'Permission Audit',
       description: 'Changes to permissions and access rights',
-      icon: '🔍'
     },
     {
       id: 'role-assignment',
       name: 'Role Assignment Report',
       description: 'Role changes and assignments over time',
-      icon: '👥'
     },
     {
       id: 'security-summary',
       name: 'Security Summary',
       description: 'Security events and access violations',
-      icon: '🛡️'
     },
     {
       id: 'compliance',
       name: 'Compliance Report',
       description: 'Regulatory compliance and access control',
-      icon: '📋'
     },
     {
       id: 'system-usage',
       name: 'System Usage',
       description: 'Overall system usage statistics',
-      icon: '📈'
     },
   ]
 
@@ -91,6 +87,14 @@ const Reports = () => {
       const endpoint = endpointMap[report.id] || '/reports/user-activity'
       const { data } = await api.get(endpoint, { params })
       setReportData(data)
+
+      // Log report generation to audit logs
+      await api.post('/audit-logs', {
+        action: 'Report Generated',
+        resource: 'Reports',
+        details: `Generated "${report.name}" (${data.length} records)`,
+        severity: 'Info',
+      })
     } catch (err) {
       alert('Failed to generate report')
     } finally {
@@ -110,24 +114,28 @@ const Reports = () => {
 
   const handleExportPDF = () => {
     if (!selectedReport || !reportData.length) return alert('Generate a report first')
+    const doc = new jsPDF({ orientation: 'landscape' })
     const headers = Object.keys(reportData[0])
-    const rows = reportData.map(row =>
-      `<tr>${headers.map(h => `<td style="border:1px solid #ddd;padding:6px 10px;font-size:12px">${row[h] ?? ''}</td>`).join('')}</tr>`
-    ).join('')
-    const html = `
-      <html><head><title>${selectedReport.name}</title>
-      <style>body{font-family:sans-serif;padding:20px}h2{margin-bottom:12px}table{border-collapse:collapse;width:100%}th{background:#1f2937;color:#fff;padding:8px 10px;font-size:12px;text-align:left;border:1px solid #ddd}</style>
-      </head><body>
-      <h2>${selectedReport.name}</h2>
-      <p style="font-size:12px;color:#666;margin-bottom:12px">Generated: ${new Date().toLocaleString()} &nbsp;|&nbsp; ${reportData.length} records</p>
-      <table><thead><tr>${headers.map(h => `<th>${h.replace(/_/g,' ')}</th>`).join('')}</tr></thead>
-      <tbody>${rows}</tbody></table>
-      </body></html>`
-    const win = window.open('', '_blank')
-    win.document.write(html)
-    win.document.close()
-    win.focus()
-    win.print()
+    const rows = reportData.map(row => headers.map(h => row[h] ?? ''))
+
+    doc.setFontSize(16)
+    doc.setTextColor(31, 41, 55)
+    doc.text(selectedReport.name, 14, 18)
+
+    doc.setFontSize(9)
+    doc.setTextColor(120, 120, 120)
+    doc.text(`Generated: ${new Date().toLocaleString()}  |  ${reportData.length} records`, 14, 26)
+
+    autoTable(doc, {
+      head: [headers.map(h => h.replace(/_/g, ' ').toUpperCase())],
+      body: rows,
+      startY: 32,
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [31, 41, 55], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
+    })
+
+    doc.save(`${selectedReport.id}-report.pdf`)
   }
 
   const handleServerExportCSV = async (type) => {
@@ -148,63 +156,59 @@ const Reports = () => {
     <div>
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Reports</h1>
 
-      {/* Date Range Filter */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Report Filters</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-            <input
-              type="date"
-              value={dateRange.start}
-              onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-            <input
-              type="date"
-              value={dateRange.end}
-              onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex items-end gap-2">
-            <button
-              onClick={() => selectedReport && handleGenerateReport(selectedReport)}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Apply Filters
-            </button>
-            <button
-              onClick={() => setDateRange({ start: '', end: '' })}
-              className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors font-medium"
-            >
-              Clear Dates
-            </button>
+      {/* Filters + Report Types */}
+      <div className="bg-white rounded-lg shadow-md mb-8">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Report Filters</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-end gap-2">
+              <button
+                onClick={() => selectedReport && handleGenerateReport(selectedReport)}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Apply Filters
+              </button>
+              <button
+                onClick={() => setDateRange({ start: '', end: '' })}
+                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors font-medium"
+              >
+                Clear Dates
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Report Types Grid */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Available Reports</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="divide-y divide-gray-100">
           {reportTypes.map((report) => (
             <div
               key={report.id}
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+              className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">{report.icon}</span>
-                <h3 className="text-lg font-semibold text-gray-800">{report.name}</h3>
+              <div className="flex-1 min-w-0 mr-6">
+                <h3 className="text-base font-semibold text-gray-800">{report.name}</h3>
+                <p className="text-sm text-gray-500 mt-0.5">{report.description}</p>
               </div>
-              <p className="text-gray-600 text-sm mb-4">{report.description}</p>
               <button
                 onClick={() => handleGenerateReport(report)}
                 disabled={loading}
-                className="w-full bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="shrink-0 bg-gray-800 text-white py-2 px-5 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 text-sm font-medium"
               >
                 {loading && selectedReport?.id === report.id ? 'Loading...' : 'Generate'}
               </button>

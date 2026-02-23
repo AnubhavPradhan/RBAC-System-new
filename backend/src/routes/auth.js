@@ -102,4 +102,12 @@ router.get('/me', auth, (req, res) => {
   res.json(user)
 })
 
+// POST /api/auth/logout
+router.post('/logout', auth, (req, res) => {
+  db.prepare(
+    'INSERT INTO audit_logs (user_email, action, resource, details, severity) VALUES (?, ?, ?, ?, ?)'
+  ).run(req.user.email, 'Logout', 'Auth', `User logged out: ${req.user.email}`, 'Info')
+  res.json({ message: 'Logged out' })
+})
+
 module.exports = router
